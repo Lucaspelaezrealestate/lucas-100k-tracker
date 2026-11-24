@@ -11,30 +11,31 @@ const json = (data: unknown, status = 200) =>
 
 const isValidDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d);
 
-function authorized(req: Request, allowToken = true) {
+function authorized(req: Request) {
   const pin = Netlify.env.get("PIN") || "";
   const token = Netlify.env.get("API_TOKEN") || "";
-  const hPin = req.headers.get("x-pin") || "";
+  const url = new URL(req.url);
+  const hPin = req.headers.get("x-pin") || url.searchParams.get("pin") || "";
   const hTok = req.headers.get("x-token") || "";
   if (pin && hPin === pin) return "pin";
-  if (allowToken && token && hTok === token) return "token";
+  if (token && hTok === token) return "token";
   return null;
 }
 
 const emptyDay = (date: string) => ({
   date,
   am: { affirmations: ["", "", ""], gratitude: ["", "", ""], top3: ["", "", ""] },
-  metrics: {
-    calls: null, convos: null, appts_set: null, appts_conducted: null,
-    listings_taken: null, buyer_agreements: null, zma_texts: null,
-    emails_sent: null, posts: null, prospecting_min: null, cma_videos: null,
-    gci_pending: null, gci_closed: null,
-  },
-  auto: {},            // same keys as metrics, filled by the daily task
-  auto_meta: {},       // { source, at }
-  nonneg: {},          // id -> boolean
-  recommended: {},     // id -> boolean
+  metrics: {},        // manual overrides (any metric key)
+  auto: {},           // filled by the daily task
+  auto_meta: {},      // key -> { source, at }
+  nonneg: {},         // id -> boolean
+  nonneg_text: { extra: "" },
+  recommended: {},    // id -> boolean
+  recommended_text: { workout: "", other1: "", other2: "" },
+  notes: "",          // Journal: notes & reflections
+  plan_notes: "",     // Daily action plan: free lines at the bottom
   pm: { wins: "", growth: "", tomorrow: "" },
+  photos: [] as string[],
   updatedAt: null as string | null,
 });
 
@@ -43,7 +44,6 @@ export default async (req: Request, context: Context) => {
   const path = url.pathname.replace(/^\/api/, "");
   const who = authorized(req);
 
-  // Public: plan meta (no data)
   if (path === "/meta" && req.method === "GET") {
     return json({ planStart: PLAN_START, planDays: PLAN_DAYS });
   }
@@ -51,14 +51,12 @@ export default async (req: Request, context: Context) => {
 
   const s = store();
 
-  // GET /api/days  -> all day records (compact)
   if (path === "/days" && req.method === "GET") {
     const { blobs } = await s.list({ prefix: "days/" });
     const days = await Promise.all(blobs.map((b) => s.get(b.key, { type: "json" })));
     return json({ days: days.filter(Boolean) });
   }
 
-  // GET /api/day/:date
   const m = path.match(/^\/day\/(\d{4}-\d{2}-\d{2})$/);
   if (m && req.method === "GET") {
     const date = m[1];
@@ -66,7 +64,6 @@ export default async (req: Request, context: Context) => {
     return json(rec);
   }
 
-  // PUT /api/day/:date  (UI, full record merge)
   if (m && req.method === "PUT") {
     if (who !== "pin") return json({ error: "pin required" }, 403);
     const date = m[1];
@@ -78,13 +75,14 @@ export default async (req: Request, context: Context) => {
       date,
       auto: prev.auto,
       auto_meta: prev.auto_meta,
+      photos: prev.photos || [],
       updatedAt: new Date().toISOString(),
     };
     await s.setJSON(`days/${date}`, next);
     return json(next);
   }
 
-  // POST /api/metrics  { date, auto: {calls:..}, source: "mojo|calendar|quo" }
+  // POST /api/metrics  { date, auto: {...}, source }
   if (path === "/metrics" && req.method === "POST") {
     const body = await req.json();
     const date = body.date;
@@ -103,7 +101,36 @@ export default async (req: Request, context: Context) => {
     return json(next);
   }
 
-  // GET/PUT /api/settings (targets, GCI goal, etc.)
+  // POST /api/photo/:date  body: raw image bytes, header content-type image/jpeg|png
+  const p = path.match(/^\/photo\/(\d{4}-\d{2}-\d{2})(?:\/(\d+))?$/);
+  if (p && req.method === "POST") {
+    const date = p[1];
+    const ct = req.headers.get("content-type") || "image/jpeg";
+    if (!ct.startsWith("image/")) return json({ error: "image only" }, 400);
+    const bytes = await req.arrayBuffer();
+    if (bytes.byteLength > 4_500_000) return json({ error: "too large" }, 413);
+    const prev = (await s.get(`days/${date}`, { type: "json" })) || emptyDay(date);
+    const id = String(Date.now());
+    await s.set(`photos/${date}/${id}`, bytes, { metadata: { ct } });
+    const photos = [...(prev.photos || []), id];
+    const next = { ...prev, photos, updatedAt: new Date().toISOString() };
+    await s.setJSON(`days/${date}`, next);
+    return json({ id, photos });
+  }
+  if (p && p[2] && req.method === "GET") {
+    const entry = await s.getWithMetadata(`photos/${p[1]}/${p[2]}`, { type: "arrayBuffer" });
+    if (entry === null) return new Response("not found", { status: 404 });
+    return new Response(entry.data, { headers: { "content-type": String(entry.metadata?.ct || "image/jpeg"), "cache-control": "private, max-age=86400" } });
+  }
+  if (p && p[2] && req.method === "DELETE") {
+    if (who !== "pin") return json({ error: "pin required" }, 403);
+    await s.delete(`photos/${p[1]}/${p[2]}`);
+    const prev = (await s.get(`days/${p[1]}`, { type: "json" })) || emptyDay(p[1]);
+    const next = { ...prev, photos: (prev.photos || []).filter((x: string) => x !== p[2]) };
+    await s.setJSON(`days/${p[1]}`, next);
+    return json(next);
+  }
+
   if (path === "/settings") {
     if (req.method === "GET") return json((await s.get("settings", { type: "json" })) || {});
     if (req.method === "PUT") {
