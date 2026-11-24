@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>100K in 100 Days — Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#02222C;--clay:#B28465;--white:#fff;--ink:#02222C;--mute:#5B6770;--line:#E6E1DA;--bg:#F6F4F0;--ok:#2E7D5B;--warn:#C9A227;--bad:#B23A3A}
+*{box-sizing:border-box}
+body{margin:0;font-family:Jost,"Century Gothic",sans-serif;background:var(--bg);color:var(--ink);font-size:16px}
+header{background:var(--blue);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5}
+header .top{display:flex;justify-content:space-between;align-items:center;max-width:980px;margin:0 auto;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:18px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+header h1 span{color:var(--clay)}
+.daynav{display:flex;align-items:center;gap:8px}
+.daynav button{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:6px;padding:6px 10px;cursor:pointer;font-family:inherit}
+.daynav input{font-family:inherit;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:6px;padding:6px 8px}
+.daynav .pill{background:var(--clay);color:#fff;font-weight:700;padding:6px 10px;border-radius:6px;font-size:13px;letter-spacing:.06em}
+nav.tabs{max-width:980px;margin:12px auto 0;display:flex;gap:6px;padding:0 16px}
+nav.tabs button{flex:1;padding:10px;border:none;border-radius:8px 8px 0 0;background:#dcd8d0;color:var(--ink);font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;font-size:13px}
+nav.tabs button.active{background:#fff}
+main{max-width:980px;margin:0 auto 60px;background:#fff;padding:16px;border-radius:0 0 12px 12px}
+section.card{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+section.card h2{margin:0 0 4px;font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--clay)}
+section.card .sub{color:var(--mute);font-size:13px;margin-bottom:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:700px){.grid3,.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+label.f{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-bottom:4px}
+input[type=text],input[type=number],textarea{width:100%;font-family:inherit;font-size:15px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+textarea{min-height:72px;resize:vertical}
+.metric{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.metric .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.metric input{margin-top:4px;font-size:22px;font-weight:700;padding:4px 8px}
+.metric .auto{font-size:11px;color:var(--mute);margin-top:3px}
+.metric .auto b{color:var(--ok)}
+.check{display:flex;align-items:flex-start;gap:10px;padding:8px 6px;border-bottom:1px dashed var(--line);cursor:pointer}
+.check:last-child{border-bottom:none}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--clay)}
+.check .t{font-size:15px}.check .t small{display:block;color:var(--mute);font-size:12px}
+.group{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);font-weight:700;margin:10px 0 2px}
+.bar{display:flex;gap:10px;align-items:center;justify-content:flex-end;position:sticky;bottom:0;background:#fff;padding:10px 0;border-top:1px solid var(--line)}
+button.primary{background:var(--clay);color:#fff;border:none;border-radius:8px;padding:12px 22px;font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;font-size:14px}
+button.ghost{background:transparent;border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-family:inherit;cursor:pointer;color:var(--ink)}
+.status{font-size:13px;color:var(--mute)}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--blue);color:#fff;border-radius:10px;padding:12px}
+.tile .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.8}
+.tile .v{font-size:28px;font-weight:700;line-height:1.1;margin-top:4px}
+.tile .v small{font-size:13px;font-weight:400;opacity:.8}
+.tile.clay{background:var(--clay)}
+.tile.white{background:#fff;color:var(--ink);border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.pct{display:inline-block;min-width:46px;text-align:center;border-radius:6px;padding:2px 6px;font-weight:700;color:#fff;font-size:12px}
+.pct.g{background:var(--ok)}.pct.y{background:var(--warn)}.pct.r{background:var(--bad)}
+.hist .row{display:flex;justify-content:space-between;align-items:center;padding:10px 6px;border-bottom:1px solid var(--line);cursor:pointer}
+.hist .row:hover{background:var(--bg)}
+#gate{position:fixed;inset:0;background:var(--blue);display:flex;align-items:center;justify-content:center;z-index:50}
+#gate form{background:#fff;padding:28px;border-radius:12px;width:320px;text-align:center}
+#gate h2{margin:0 0 6px;font-size:16px;letter-spacing:.08em;text-transform:uppercase}
+.hidden{display:none!important}
+.hint{font-size:12px;color:var(--mute)}
+</style>
+</head>
+<body>
+<div id="gate"><form onsubmit="return setPin(event)"><h2>100K in 100 Days</h2><p class="hint">Enter your PIN</p><input type="password" id="pinInput" inputmode="numeric" autocomplete="current-password" style="font-size:22px;text-align:center;letter-spacing:.3em;width:100%;padding:10px;border:1px solid #E6E1DA;border-radius:8px"><br><br><button class="primary" style="width:100%">Open</button><p id="gateErr" class="hint" style="color:#B23A3A"></p></form></div>
+
+<header><div class="top">
+  <h1>100K in <span>100 Days</span></h1>
+  <div class="daynav">
+    <button onclick="shiftDay(-1)">‹</button>
+    <input type="date" id="dateInput" onchange="loadDay(this.value)">
+    <button onclick="shiftDay(1)">›</button>
+    <span class="pill" id="dayPill">DAY –</span>
+  </div>
+</div></header>
+
+<nav class="tabs">
+  <button class="active" data-tab="today" onclick="showTab('today')">Today</button>
+  <button data-tab="score" onclick="showTab('score')">Scorecard</button>
+  <button data-tab="history" onclick="showTab('history')">History</button>
+</nav>
+
+<main>
+<!-- TODAY -->
+<div id="tab-today">
+  <section class="card">
+    <h2>Morning routine · Journal</h2>
+    <div class="sub">Focus on something that lifts your spirit. Affirmations, gratitude, then your top 3 for today.</div>
+    <div class="grid3">
+      <div><label class="f">Affirmations</label><input type="text" data-k="am.affirmations.0" placeholder="I am…"><input type="text" data-k="am.affirmations.1" style="margin-top:6px"><input type="text" data-k="am.affirmations.2" style="margin-top:6px"></div>
+      <div><label class="f">What are you grateful for</label><input type="text" data-k="am.gratitude.0"><input type="text" data-k="am.gratitude.1" style="margin-top:6px"><input type="text" data-k="am.gratitude.2" style="margin-top:6px"></div>
+      <div><label class="f">Today's top 3 priorities</label><input type="text" data-k="am.top3.0" placeholder="1."><input type="text" data-k="am.top3.1" placeholder="2." style="margin-top:6px"><input type="text" data-k="am.top3.2" placeholder="3." style="margin-top:6px"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Success metrics</h2>
+    <div class="sub">Track your activities. Numbers in green were filled automatically (Mojo · Calendar · Quo). Type to override.</div>
+    <div class="grid4" id="metrics"></div>
+  </section>
+
+  <section class="card">
+    <h2>Non-negotiables</h2>
+    <div class="sub">Tasks you simply cannot miss every day.</div>
+    <div id="nonneg"></div>
+  </section>
+
+  <section class="card">
+    <h2>Recommended business commitments</h2>
+    <div class="sub">"While we're calling it recommended, you should really try to make it happen!"</div>
+    <div id="recommended"></div>
+  </section>
+
+  <section class="card">
+    <h2>Evening · Notes & reflections</h2>
+    <div class="sub">Reflect on today's wins and areas for growth. Plan for tomorrow.</div>
+    <div class="grid3">
+      <div><label class="f">Today's wins</label><textarea data-k="pm.wins"></textarea></div>
+      <div><label class="f">Areas for growth</label><textarea data-k="pm.growth"></textarea></div>
+      <div><label class="f">Plan for tomorrow</label><textarea data-k="pm.tomorrow"></textarea></div>
+    </div>
+  </section>
+
+  <div class="bar"><span class="status" id="status"></span><button class="ghost" onclick="loadDay(curDate)">Reload</button><button class="primary" onclick="saveDay()">Save day</button></div>
+</div>
+
+<!-- SCORECARD -->
+<div id="tab-score" class="hidden">
+  <section class="card">
+    <h2>Scorecard</h2>
+    <div class="sub" id="scoreSub"></div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="ghost" onclick="renderScore('day')">Today</button>
+      <button class="ghost" onclick="renderScore('week')">This week</button>
+      <button class="ghost" onclick="renderScore('month')">This month</button>
+      <button class="ghost" onclick="renderScore('plan')">100 days</button>
+    </div>
+    <div class="score" id="tiles"></div>
+    <div style="margin-top:14px;overflow:auto"><table id="scoreTable"></table></div>
+    <p class="hint" id="funnel"></p>
+  </section>
+</div>
+
+<!-- HISTORY -->
+<div id="tab-history" class="hidden">
+  <section class="card"><h2>History</h2><div class="sub">Every day you've logged. Tap to open.</div><div class="hist" id="hist"></div></section>
+</div>
+</main>
+
+<script>
+const PLAN_START = new Date("2026-11-23T00:00:00");
+const PLAN_DAYS = 100;
+const METRICS = [
+  ["calls","Calls made"],["convos","Conversations"],["appts_set","Appointments set"],["appts_conducted","Appointments held"],
+  ["listings_taken","Listings taken"],["buyer_agreements","Buyer agreements"],["zma_texts","ZMA texts sent"],["emails_sent","Emails sent"],
+  ["posts","Social posts"],["cma_videos","CMA videos"],["prospecting_min","Prospecting (min)"],["gci_pending","GCI pending ($)"],["gci_closed","GCI closed ($)"]
+];
+const NONNEG = [
+  ["Morning routine",[["meditate","Meditate, gratitude, affirmations"],["review","Review daily goals and schedule"]]],
+  ["Lead generation & engagement",[["zma5","Send ZMA texts","Minimum 5"],["followup","Follow-up with leads (CRM) and/or Prospecting Trinity","1 hour minimum"],["schedule","Schedule appointments"],["extra","Pick 1 additional lead gen activity"],["email","Send weekly email","Thursday"]]],
+  ["Build your brand",[["posts2","Social media posts","Post 2 times"]]],
+  ["Business performance",[["tracker","Update tracking sheet"]]]
+];
+const RECOMMENDED = [
+  ["Morning routine",[["workout","Morning workout","30 min"],["podcast","Listen to a podcast"]]],
+  ["Lead generation & engagement",[["cma","Record and send CMA videos","1–2"],["calls","Prospecting calls","Min. 10 conversations or 2 hours of power"]]],
+  ["Build your brand",[["video","Record short video","1 video"],["engage","Engage with the audience on social media"]]],
+  ["Evening routine",[["reflect","Reflect on the day's progress"],["plan","Plan for tomorrow"]]]
+];
+const targets = (d) => { const wk = d.getDay()>=1 && d.getDay()<=5; return { calls: wk?50:10, convos: wk?10:2, zma_texts:5, posts:2 }; };
+
+let PIN = localStorage.getItem("pin") || "";
+let curDate = fmt(new Date()); let day = null; let allDays = [];
+function fmt(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function parse(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function dayNum(s){return Math.floor((parse(s)-PLAN_START)/86400000)+1}
+const api = (p,opt={}) => fetch("/api"+p,{...opt,headers:{"content-type":"application/json","x-pin":PIN,...(opt.headers||{})}}).then(async r=>{ if(r.status===401){localStorage.removeItem("pin");location.reload();} return r.json(); });
+
+function setPin(e){e.preventDefault();PIN=document.getElementById("pinInput").value.trim();localStorage.setItem("pin",PIN);init();return false}
+async function init(){
+  if(!PIN) return;
+  const t = await api("/meta"); if(!t||t.error){document.getElementById("gateErr").textContent="Wrong PIN";return}
+  document.getElementById("gate").classList.add("hidden");
+  buildChecklists(); buildMetrics();
+  document.getElementById("dateInput").value=curDate;
+  await loadDay(curDate);
+}
+function buildChecklists(){
+  const mk=(id,groups,key)=>{const el=document.getElementById(id);el.innerHTML="";groups.forEach(([g,items])=>{el.insertAdjacentHTML("beforeend",`<div class="group">${g}</div>`);items.forEach(([k,t,s])=>el.insertAdjacentHTML("beforeend",`<label class="check"><input type="checkbox" data-c="${key}.${k}"><span class="t">${t}${s?`<small>${s}</small>`:""}</span></label>`))})};
+  mk("nonneg",NONNEG,"nonneg"); mk("recommended",RECOMMENDED,"recommended");
+}
+function buildMetrics(){
+  const el=document.getElementById("metrics"); el.innerHTML="";
+  METRICS.forEach(([k,l])=>el.insertAdjacentHTML("beforeend",`<div class="metric"><div class="lbl">${l}</div><input type="number" min="0" data-m="${k}" placeholder="–"><div class="auto" id="auto-${k}"></div></div>`));
+}
+function get(o,p){return p.split(".").reduce((a,k)=>a&&a[k],o)}
+function set(o,p,v){const ks=p.split(".");let a=o;ks.slice(0,-1).forEach(k=>{if(a[k]==null)a[k]=isNaN(+ks[ks.indexOf(k)+1])?{}:[];a=a[k]});a[ks.at(-1)]=v}
+async function loadDay(d){
+  curDate=d; document.getElementById("dateInput").value=d;
+  const n=dayNum(d); document.getElementById("dayPill").textContent = n>=1&&n<=PLAN_DAYS?`DAY ${n} / ${PLAN_DAYS}`:(n<1?`STARTS IN ${1-n} D`:"PLAN DONE");
+  status("Loading…"); day = await api("/day/"+d);
+  document.querySelectorAll("[data-k]").forEach(el=>el.value=get(day,el.dataset.k)||"");
+  document.querySelectorAll("[data-c]").forEach(el=>el.checked=!!get(day,el.dataset.c));
+  METRICS.forEach(([k])=>{const inp=document.querySelector(`[data-m="${k}"]`);const v=day.metrics?.[k];inp.value=v==null?"":v;const a=day.auto?.[k];const meta=day.auto_meta?.[k];const box=document.getElementById("auto-"+k);
+    if(a!=null){box.innerHTML=`<b>auto ${a}</b> · ${meta?.source||""}`;inp.placeholder=a;} else {box.textContent="";inp.placeholder="–";}});
+  const isThu=parse(d).getDay()===4; document.querySelector('[data-c="nonneg.email"]').closest(".check").style.opacity=isThu?1:.45;
+  status(day.updatedAt?"Saved "+new Date(day.updatedAt).toLocaleString():"Not saved yet");
+}
+async function saveDay(){
+  const body={am:{affirmations:[],gratitude:[],top3:[]},metrics:{},nonneg:{},recommended:{},pm:{}};
+  document.querySelectorAll("[data-k]").forEach(el=>set(body,el.dataset.k,el.value));
+  document.querySelectorAll("[data-c]").forEach(el=>set(body,el.dataset.c,el.checked));
+  METRICS.forEach(([k])=>{const v=document.querySelector(`[data-m="${k}"]`).value;body.metrics[k]=v===""?null:Number(v)});
+  status("Saving…"); day=await api("/day/"+curDate,{method:"PUT",body:JSON.stringify(body)}); status("Saved "+new Date(day.updatedAt).toLocaleTimeString()); allDays=[];
+}
+function status(t){document.getElementById("status").textContent=t}
+function shiftDay(n){const d=parse(curDate);d.setDate(d.getDate()+n);loadDay(fmt(d))}
+function showTab(t){document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));["today","score","history"].forEach(x=>document.getElementById("tab-"+x).classList.toggle("hidden",x!==t));if(t==="score")renderScore("day");if(t==="history")renderHistory()}
+
+// ---------- scorecard ----------
+const val=(rec,k)=>{const m=rec.metrics?.[k];if(m!=null&&m!=="")return Number(m);const a=rec.auto?.[k];return a!=null?Number(a):0};
+const nnPct=(rec)=>{const d=parse(rec.date);const items=NONNEG.flatMap(([,i])=>i.map(x=>x[0])).filter(k=>k!=="email"||d.getDay()===4);const done=items.filter(k=>rec.nonneg?.[k]).length;return items.length?done/items.length:0};
+async function getAll(){if(!allDays.length){const r=await api("/days");allDays=(r.days||[]).sort((a,b)=>a.date<b.date?-1:1)}return allDays}
+function range(kind){const t=parse(curDate);let a,b;
+  if(kind==="day"){a=b=t}
+  else if(kind==="week"){a=new Date(t);a.setDate(t.getDate()-((t.getDay()+6)%7));b=new Date(a);b.setDate(a.getDate()+6)}
+  else if(kind==="month"){a=new Date(t.getFullYear(),t.getMonth(),1);b=new Date(t.getFullYear(),t.getMonth()+1,0)}
+  else {a=new Date(PLAN_START);b=new Date(PLAN_START);b.setDate(b.getDate()+PLAN_DAYS-1)}
+  if(a<PLAN_START)a=new Date(PLAN_START); return [a,b]}
+async function renderScore(kind){
+  const days=await getAll(); const [a,b]=range(kind); const today=new Date(); today.setHours(0,0,0,0);
+  const end = b>today? today : b;  // only count days that have happened
+  const inR=days.filter(x=>{const d=parse(x.date);return d>=a&&d<=b});
+  let T={calls:0,convos:0,zma_texts:0,posts:0},S={},nn=[],elapsed=0;
+  for(let d=new Date(a);d<=end;d.setDate(d.getDate()+1)){const t=targets(d);for(const k in t)T[k]+=t[k];elapsed++}
+  const keys=METRICS.map(m=>m[0]); keys.forEach(k=>S[k]=inR.reduce((s,r)=>s+val(r,k),0));
+  inR.forEach(r=>nn.push(nnPct(r)));
+  const pct=(x,t)=>t?Math.min(100,Math.round(100*x/t)):0;
+  const comps=[pct(S.calls,T.calls),pct(S.convos,T.convos),pct(S.zma_texts,T.zma_texts),pct(S.posts,T.posts),Math.round(100*(nn.length?nn.reduce((p,q)=>p+q,0)/Math.max(elapsed,1):0))];
+  const score=Math.round(comps.reduce((p,q)=>p+q,0)/comps.length);
+  const label={day:"Today",week:"This week (Mon–Sun)",month:"This month",plan:"100-day plan"}[kind];
+  document.getElementById("scoreSub").textContent=`${label} · ${fmt(a)} → ${fmt(b)} · ${elapsed} day${elapsed===1?"":"s"} counted · ${inR.length} logged`;
+  const cls=p=>p>=90?"g":p>=60?"y":"r";
+  const tiles=[["Score",score+"<small>/100</small>","clay"],["Calls",`${S.calls}<small>/${T.calls}</small>`],["Conversations",`${S.convos}<small>/${T.convos}</small>`],["ZMA texts",`${S.zma_texts}<small>/${T.zma_texts}</small>`],["Posts",`${S.posts}<small>/${T.posts}</small>`],["Appts set",S.appts_set],["Appts held",S.appts_conducted],["Listings taken",S.listings_taken],["Buyer agreements",S.buyer_agreements],["GCI closed",`$${S.gci_closed.toLocaleString()}<small>/100K</small>`,"white"],["GCI pending",`$${S.gci_pending.toLocaleString()}`,"white"]];
+  document.getElementById("tiles").innerHTML=tiles.map(([k,v,c])=>`<div class="tile ${c||""}"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+  const rows=[["Calls made",S.calls,T.calls],["Conversations",S.convos,T.convos],["ZMA texts",S.zma_texts,T.zma_texts],["Social posts",S.posts,T.posts],["Non-negotiables completed","—","—",comps[4]]];
+  document.getElementById("scoreTable").innerHTML=`<tr><th>Metric</th><th>Actual</th><th>Target</th><th>%</th></tr>`+rows.map(([n,x,t,p])=>{const q=p!=null?p:pct(x,t);return `<tr><td>${n}</td><td>${x}</td><td>${t}</td><td><span class="pct ${cls(q)}">${q}%</span></td></tr>`}).join("");
+  const c2a=S.convos?Math.round(100*S.appts_set/S.convos):0, a2l=S.appts_conducted?Math.round(100*(S.listings_taken+S.buyer_agreements)/S.appts_conducted):0;
+  const pace = kind==="plan" && elapsed>0 ? ` · Pace: ${Math.round(S.convos/elapsed*PLAN_DAYS)} convos & ${Math.round(S.appts_set/elapsed*PLAN_DAYS)} appts by day 100` : "";
+  document.getElementById("funnel").textContent=`Funnel: ${c2a}% of conversations → appointment · ${a2l}% of appointments held → listing/buyer agreement${pace}`;
+}
+async function renderHistory(){const days=await getAll();const el=document.getElementById("hist");if(!days.length){el.innerHTML='<p class="hint">Nothing logged yet.</p>';return}
+  el.innerHTML=days.slice().reverse().map(r=>`<div class="row" onclick="loadDay('${r.date}');showTab('today')"><div><b>Day ${dayNum(r.date)}</b> · ${parse(r.date).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}<br><span class="hint">${(r.am?.top3||[]).filter(Boolean).join(" · ")||"—"}</span></div><div style="text-align:right"><span class="hint">${val(r,"calls")} calls · ${val(r,"convos")} convos · ${val(r,"zma_texts")} ZMA</span><br><span class="pct ${nnPct(r)>=.9?"g":nnPct(r)>=.6?"y":"r"}">${Math.round(nnPct(r)*100)}% NN</span></div></div>`).join("")}
+if(PIN) init();
+</script>
+</body>
+</html>
